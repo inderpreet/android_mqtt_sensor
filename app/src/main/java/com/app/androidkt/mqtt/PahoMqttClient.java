@@ -25,28 +25,25 @@ public class PahoMqttClient {
 
     public MqttAndroidClient getMqttClient(Context context, String brokerUrl, String clientId) {
 
-        if (mqttAndroidClient != null)
-            return mqttAndroidClient;
         mqttAndroidClient = new MqttAndroidClient(context, brokerUrl, clientId);
-        if (!mqttAndroidClient.isConnected()) {
-            try {
-                IMqttToken token = mqttAndroidClient.connect(getMqttConnectionOption());
-                token.setActionCallback(new IMqttActionListener() {
-                    @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
-                        mqttAndroidClient.setBufferOpts(getDisconnectedBufferOptions());
-                        Log.d(TAG, "onSuccess");
-                    }
+        try {
+            IMqttToken token = mqttAndroidClient.connect(getMqttConnectionOption());
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    mqttAndroidClient.setBufferOpts(getDisconnectedBufferOptions());
+                    Log.d(TAG, "Success");
+                }
 
-                    @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                        Log.d(TAG, "onFailure " + exception.toString());
-                    }
-                });
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    Log.d(TAG, "Failure " + exception.toString());
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
         }
+
         return mqttAndroidClient;
     }
 
