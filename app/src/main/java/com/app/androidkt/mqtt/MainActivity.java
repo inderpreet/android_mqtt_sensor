@@ -1,18 +1,26 @@
 package com.app.androidkt.mqtt;
 
+import android.app.Service;
+import android.bluetooth.BluetoothClass;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.w3c.dom.Text;
 
 import java.io.UnsupportedEncodingException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
     private MqttAndroidClient client;
     private String TAG = "MainActivity";
@@ -21,10 +29,21 @@ public class MainActivity extends AppCompatActivity {
     private EditText textMessage, subscribeTopic, unSubscribeTopic;
     private Button publishMessage, subscribe, unSubscribe;
 
+    TextView sensorDataView;
+    SensorManager sensorManager;
+    Sensor sensor;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sensorDataView = (TextView) findViewById(R.id.sensorDataView); // get a handle on the view element
+        sensorManager = (SensorManager) getSystemService(Service.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        sensorDataView.setText("Starting Up...");
+
         pahoMqttClient = new PahoMqttClient();
 
         textMessage = (EditText) findViewById(R.id.textMessage);
@@ -82,5 +101,30 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(MainActivity.this, MqttMessageService.class);
         startService(intent);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        if(sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT){
+            sensorDataView.setText("" + sensorEvent.values[0]);
+            //sensorDataView.setText("Something Changed");
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 }
