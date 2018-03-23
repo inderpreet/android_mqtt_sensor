@@ -9,7 +9,8 @@ The original MQTT app is by [Thumar](https://github.com/Thumar/MQTT)
 ## Progress
 
 - The basic MQTT functionality works thanks to the original author.
-- Ambient Light Sensor value is read and is updated to a textView in the Main Activity.
+- Ambient Light Sensor value is read and is updated to a textView in the Main Activity. [Link](https://www.youtube.com/watch?v=dfTeS41BbbI)
+- Got a thread working separately with a delay using thread.sleep()
 
 ## License
 

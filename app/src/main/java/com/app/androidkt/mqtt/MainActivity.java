@@ -32,6 +32,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView sensorDataView;
     SensorManager sensorManager;
     Sensor sensor;
+    TextView delayedDataView;
+    float lightData=0;
 
 
     @Override
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager = (SensorManager) getSystemService(Service.SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         sensorDataView.setText("Starting Up...");
+
+        delayedDataView = (TextView) findViewById(R.id.delayedDataView);
+        delayedDataView.setText("Delayed Text");
 
         pahoMqttClient = new PahoMqttClient();
 
@@ -99,6 +104,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        Thread t1 = new Thread(){
+            @Override
+            public void run() {
+                //super.run();
+                while (!isInterrupted()){
+                    try {
+                        Thread.sleep(2000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                lightData++;
+                                delayedDataView.setText(String.valueOf(lightData));
+                            }
+                        });
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        t1.start();
         Intent intent = new Intent(MainActivity.this, MqttMessageService.class);
         startService(intent);
     }
