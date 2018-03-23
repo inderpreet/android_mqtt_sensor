@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView delayedDataView;
     float lightData=0;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,11 +109,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 //super.run();
                 while (!isInterrupted()){
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(5000);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                lightData++;
+                                // lightData++;
                                 delayedDataView.setText(String.valueOf(lightData));
                             }
                         });
@@ -135,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent sensorEvent) {
         if(sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT){
             sensorDataView.setText("" + sensorEvent.values[0]);
-            //sensorDataView.setText("Something Changed");
+            lightData = sensorEvent.values[0];
         }
     }
 
