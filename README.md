@@ -12,6 +12,7 @@ The original MQTT app is by [Thumar](https://github.com/Thumar/MQTT)
 - Ambient Light Sensor value is read and is updated to a textView in the Main Activity. [Link](https://www.youtube.com/watch?v=dfTeS41BbbI)
 - Got a thread working separately with a delay using thread.sleep()
 - Got the thread to update the sensor data to a View Component after delays. Updating the delay to 5 seconds.
+- Got the App sending the sensor data when a toggle button is set. It also stops sending data if the app goes into the background.
 
 ## License
 

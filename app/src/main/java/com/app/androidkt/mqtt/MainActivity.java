@@ -11,8 +11,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -35,6 +37,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView delayedDataView;
     float lightData=0;
 
+    ToggleButton sendDataToggle;
+    boolean sendDataEnabled=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         delayedDataView = (TextView) findViewById(R.id.delayedDataView);
         delayedDataView.setText("Delayed Text");
+
+        sendDataToggle = (ToggleButton) findViewById(R.id.sendDataToggle);
 
         pahoMqttClient = new PahoMqttClient();
 
@@ -103,6 +110,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        sendDataToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // The toggle is enabled
+                    sendDataEnabled = true;
+                } else {
+                    // The toggle is disabled
+                    sendDataEnabled = false;
+                }
+            }
+        });
+
         Thread t1 = new Thread(){
             @Override
             public void run() {
@@ -113,8 +132,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                String msg;
                                 // lightData++;
-                                delayedDataView.setText(String.valueOf(lightData));
+                                delayedDataView.setText("Delayed: " + String.valueOf(lightData));
+                                if(sendDataEnabled) {
+                                    msg = String.valueOf(lightData);
+                                    try {
+                                        pahoMqttClient.publishMessage(client, msg, 1, Constants.PUBLISH_TOPIC);
+                                    } catch (MqttException e) {
+                                        e.printStackTrace();
+                                    } catch (UnsupportedEncodingException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                             }
                         });
 
@@ -133,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if(sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT){
-            sensorDataView.setText("" + sensorEvent.values[0]);
+            sensorDataView.setText("Live: " + sensorEvent.values[0]);
             lightData = sensorEvent.values[0];
         }
     }
@@ -147,11 +177,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onPause(){
         super.onPause();
         sensorManager.unregisterListener(this);
+        // disable sending of the data
+        sendDataEnabled = false; // since we are not reading the sensor either when the app looses focus.
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        if(sendDataToggle.isChecked()){ // If the toggle button is ON
+            sendDataEnabled = true;     // re-enable sending of  sensor data
+        }
     }
 }
